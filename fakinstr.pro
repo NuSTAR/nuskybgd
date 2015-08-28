@@ -1,5 +1,5 @@
 pro fakinstr,indir,obsid,ab,paramfile,bgddir
-      
+
 
 auxildir=getenv('NUSKYBGD_AUXIL')+'/'
 dir=indir
@@ -41,15 +41,10 @@ rmfname=caldb+'data/nustar/fpm/cpf/rmf/nu'+ab+'cutdet'+str(idet)+'_20100101v001.
 fakname='instrbgdfit'+ab+'_det'+str(idet)+'.pha'
 
 openw,lun,'temp.xcm',/get_lun
-printf,lun,'lmod nuabs'
-printf,lun,'model nuabs*(',format='($,A)'
+printf,lun,'model ',format='($,A)'
 for i=0,n_elements(eline)-1 do printf,lun,'lorentz+',format='($,A)'
 ;printf,lun,'bknpo+phabs*po)'
-printf,lun,'apec)'
-printf,lun,str(spt)+' -1'
-printf,lun,str(sczt)+' -1'
-printf,lun,'0. -1'
-printf,lun,'0.9 -1'
+printf,lun,'apec'
 for i=0,n_elements(eline)-1 do begin
     printf,lun,str(eline[i])+' -1'
     printf,lun,str(width[i])+' -1'

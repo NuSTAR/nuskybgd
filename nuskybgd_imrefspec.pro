@@ -1,6 +1,6 @@
 ; NUSKYBGD_IMREFSPEC
 ;
-; Creates reference spectra of the 3 soft bgd components, used by nuskybgd_image, 
+; Creates reference spectra of the 3 soft bgd components, used by nuskybgd_image,
 ; to produce counts images for arbitrary energy bands.  Only needs to be run once
 ; unless the nuabs parameters change in the auxil directory.
 
@@ -9,8 +9,20 @@ pro nuskybgd_imrefspec
 
 caldbdir=getenv('CALDB')+'/'
 auxildir=getenv('NUSKYBGD_AUXIL')+'/'
-pt=loadnuabs(0)
-czt=loadnuabs(1)
+
+; add detabs to rmfs (previously done with nuabs in xspec)
+ab=['A','B']
+for i=0,3 do for iab=0,1 do begin
+    rmf1=mrdfits(getcaldbfile('rmf',ab[iab],i),1,h1,/silent)
+    rmf2=mrdfits(getcaldbfile('rmf',ab[iab],i),2,h2,/silent)
+    matrix=rmf1.matrix
+    absstr=mrdfits(getcaldbfile('detabs',ab[iab],i),1,dh,/silent)
+    abs=absstr.detabs
+    for e=0,4095 do matrix[*,e]=matrix[*,e]*abs[e]
+    rmf1.matrix=matrix
+    mwrfits,rmf1,auxildir+'det'+str(i)+ab[iab]+'.rmf',h1,/silent,/create
+    mwrfits,rmf2,auxildir+'det'+str(i)+ab[iab]+'.rmf',h2,/silent
+endfor
 
 ; CXB params, from Boldt '87
 pl=str(1.29)
@@ -28,23 +40,14 @@ wdmass=str(0.6)
 texp=str(1e9)
 
 openw,lun,'temp.xcm',/get_lun
-printf,lun,'lmod nuabs'
-printf,lun,'set pt "'+str(pt[0]),format='($,A)'
-for i=1,7 do printf,lun,' '+str(pt[i]),format='($,A)'
-printf,lun,'"'
-printf,lun,'set czt "'+str(czt[0]),format='($,A)'
-for i=1,7 do printf,lun,' '+str(czt[i]),format='($,A)'
-printf,lun,'"'
 printf,lun,'foreach {i} {0 1 2 3} {'
 printf,lun,'  foreach {j} {A B} {'
 printf,lun,'    if {$j == "B"} {set off 4} else {set off 0}'
-printf,lun,'    model nuabs*po*highecut & [lindex $pt [expr $off+$i]] & '+$
-      '[lindex $czt [expr $off+$i]] & 0. & 0.9 & '+pl+' & '+norm+' & 1e-4 & '+ecut
-printf,lun,'    fakeit none & '+caldbdir+'data/nustar/fpm/cpf/rmf/'+$
-      'nu${j}cutdet${i}_20100101v001.rmf & '+auxildir+'be.arf & no & & '+$
-      auxildir+'aperbgd${j}_det${i}.pha & '+texp+', 0.'
-printf,lun,'    fakeit none & '+caldbdir+'data/nustar/fpm/cpf/rmf/'+$
-      'nu${j}cutdet${i}_20100101v001.rmf & '+auxildir+'fcxb${j}.arf & no & & '+$
+printf,lun,'    model cutoffpl & '+pl+' & '+ecut+' & '+norm
+printf,lun,'    fakeit none & '+auxildir+'det${i}${j}.rmf & '+ $
+      auxildir+'be.arf & no & & '+auxildir+'aperbgd${j}_det${i}.pha & '+texp+', 0.'
+printf,lun,'    fakeit none & '+auxildir+'det${i}${j}.rmf & '+ $
+      auxildir+'fcxb${j}.arf & no & & '+ $
       auxildir+'fcxbbgd${j}_det${i}.pha & '+texp+', 0.'
 ;printf,lun,'    fakeit none & '+caldbdir+'data/nustar/fpm/cpf/rmf/'+$
 ;      'nu${j}cutdet${i}_20100101v001.rmf & '+caldbdir+'data/nustar/fpm/bcf/arf/'+$
@@ -74,5 +77,7 @@ free_lun,lun
 
 spawn,'xspec - temp.xcm'
 spawn,'rm -f temp.xcm'
+
+;for i=0,3 do for iab=0,1 do spawn,'rm -f '+auxildir+'det'+str(i)+ab[iab]+'.rmf'
 
 end
