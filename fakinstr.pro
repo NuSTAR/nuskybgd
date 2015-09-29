@@ -25,8 +25,8 @@ eline=eline[0:n_elements(width)-3]
 width=width[0:n_elements(width)-3]
 
 caldb=getenv('CALDB')+'/'
-pt=loadnuabs(0)
-czt=loadnuabs(1)
+;pt=loadnuabs(0)
+;czt=loadnuabs(1)
 readcol,paramfile,p0,p1,p2,p3,/silent,skipline=3
 
 for idet=0,3 do begin
@@ -34,8 +34,8 @@ for idet=0,3 do begin
 if idet eq 0 then p=p0 else if idet eq 1 then p=p1 else if idet eq 2 then p=p2 $
       else p=p3
 
-spt=pt[idet,iab]
-sczt=czt[idet,iab]
+;spt=pt[idet,iab]
+;sczt=czt[idet,iab]
 
 rmfname=caldb+'data/nustar/fpm/cpf/rmf/nu'+ab+'cutdet'+str(idet)+'_20100101v001.rmf'
 fakname='instrbgdfit'+ab+'_det'+str(idet)+'.pha'
