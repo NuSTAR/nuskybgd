@@ -27,7 +27,7 @@ if clobber ne 0 or imexist ne 8 then begin
 IF keyword_set(pa) NE 1 THEN BEGIN
    if file_test(dir+'pa_gtifilter.dat') then begin
       readcol,dir+'pa_gtifilter.dat',dt,pa,/silent
-      pa=total(pa*dt)/total(dt)
+      pa=total(pa*dt)/total(dt)+1.0
    endif else begin
 ; If you want to use this (or another) log file for the PA, set stillneedpa
 ;  to 0 and uncomment the following lines
@@ -47,7 +47,7 @@ IF keyword_set(pa) NE 1 THEN BEGIN
          evt=mrdfits(cldir+'nu'+obsid+'A01_cl.evt',1,head,/silent)
 ; old PA definition
 ;         pa = sxpar(head,'PA_PNT')-90.
-         pa = sxpar(head,'PA_PNT')
+         pa = sxpar(head,'PA_PNT')+1.0
          print,'Using PA from event file header keyword PA_PNT: '+str(pa)
       endif
    endelse
@@ -106,14 +106,18 @@ for i=0,999 do begin
 endfor
 if not keyword_set(oldpa) then begin
     arot=-pa*!pi/180.
-    detxa=350-(ia-refminx)*cos(arot)+(ja-refminy)*sin(arot)
-    detya=350+(ia-refminx)*sin(arot)+(ja-refminy)*cos(arot)
-    nudge=1
+;    detxa=350+round(-(ia-refminx-1.0)*cos(arot)+(ja-refminy+3.0)*sin(arot))
+;    detya=350+round((ia-refminx-1.0)*sin(arot)+(ja-refminy+3.0)*cos(arot))
+    detxa=350+round(-(ia-refminx)*cos(arot)+(ja-refminy)*sin(arot))
+    detya=350+round((ia-refminx)*sin(arot)+(ja-refminy)*cos(arot))
+    nudge=[2.7,0.8] ;[1,1]
+    nudge=[nudge[0]*cos(-arot)-nudge[1]*sin(-arot),$
+          nudge[0]*sin(-arot)+nudge[1]*cos(-arot)]
 endif else begin
     arot=(pa-90.)*!pi/180.
     detxa=350+(ia-refminx)*cos(arot)-(ja-refminy)*sin(arot)
     detya=350-(ia-refminx)*sin(arot)-(ja-refminy)*cos(arot)
-    nudge=-1
+    nudge=[-1,-1]
 endelse
 jj=where(detxa ge 0 and detxa lt 360 and $
       detya ge 0 and detya lt 360)
@@ -174,31 +178,31 @@ bgdimi1=fltarr(1000,1000)
 bgdimi2=fltarr(1000,1000)
 bgdimi3=fltarr(1000,1000)
 for i=0,n_elements(ii)-1 do begin
-    bgdimap0+=shift(refimap0,ii2d[0,i]-refminx-nudge,ii2d[1,i]-refminy-nudge)* $
+    bgdimap0+=fshift(refimap0,ii2d[0,i]-refminx-nudge[0],ii2d[1,i]-refminy-nudge[1])* $
             posim[ii2d[0,i],ii2d[1,i]]
-    bgdimap1+=shift(refimap1,ii2d[0,i]-refminx-nudge,ii2d[1,i]-refminy-nudge)* $
+    bgdimap1+=fshift(refimap1,ii2d[0,i]-refminx-nudge[0],ii2d[1,i]-refminy-nudge[1])* $
             posim[ii2d[0,i],ii2d[1,i]]
-    bgdimap2+=shift(refimap2,ii2d[0,i]-refminx-nudge,ii2d[1,i]-refminy-nudge)* $
+    bgdimap2+=fshift(refimap2,ii2d[0,i]-refminx-nudge[0],ii2d[1,i]-refminy-nudge[1])* $
             posim[ii2d[0,i],ii2d[1,i]]
-    bgdimap3+=shift(refimap3,ii2d[0,i]-refminx-nudge,ii2d[1,i]-refminy-nudge)* $
+    bgdimap3+=fshift(refimap3,ii2d[0,i]-refminx-nudge[0],ii2d[1,i]-refminy-nudge[1])* $
             posim[ii2d[0,i],ii2d[1,i]]
     if grxe then begin
-        bgdimg0+=shift(refimg0,ii2d[0,i]-refminx-nudge,ii2d[1,i]-refminy-nudge)* $
+        bgdimg0+=fshift(refimg0,ii2d[0,i]-refminx-nudge[0],ii2d[1,i]-refminy-nudge[1])* $
                 posim[ii2d[0,i],ii2d[1,i]]
-        bgdimg1+=shift(refimg1,ii2d[0,i]-refminx-nudge,ii2d[1,i]-refminy-nudge)* $
+        bgdimg1+=fshift(refimg1,ii2d[0,i]-refminx-nudge[0],ii2d[1,i]-refminy-nudge[1])* $
                 posim[ii2d[0,i],ii2d[1,i]]
-        bgdimg2+=shift(refimg2,ii2d[0,i]-refminx-nudge,ii2d[1,i]-refminy-nudge)* $
+        bgdimg2+=fshift(refimg2,ii2d[0,i]-refminx-nudge[0],ii2d[1,i]-refminy-nudge[1])* $
                 posim[ii2d[0,i],ii2d[1,i]]
-        bgdimg3+=shift(refimg3,ii2d[0,i]-refminx-nudge,ii2d[1,i]-refminy-nudge)* $
+        bgdimg3+=fshift(refimg3,ii2d[0,i]-refminx-nudge[0],ii2d[1,i]-refminy-nudge[1])* $
                 posim[ii2d[0,i],ii2d[1,i]]
     endif
-    bgdimi0+=shift(refimi0,ii2d[0,i]-refminx-nudge,ii2d[1,i]-refminy-nudge)* $
+    bgdimi0+=fshift(refimi0,ii2d[0,i]-refminx-nudge[0],ii2d[1,i]-refminy-nudge[1])* $
             posim[ii2d[0,i],ii2d[1,i]]
-    bgdimi1+=shift(refimi1,ii2d[0,i]-refminx-nudge,ii2d[1,i]-refminy-nudge)* $
+    bgdimi1+=fshift(refimi1,ii2d[0,i]-refminx-nudge[0],ii2d[1,i]-refminy-nudge[1])* $
             posim[ii2d[0,i],ii2d[1,i]]
-    bgdimi2+=shift(refimi2,ii2d[0,i]-refminx-nudge,ii2d[1,i]-refminy-nudge)* $
+    bgdimi2+=fshift(refimi2,ii2d[0,i]-refminx-nudge[0],ii2d[1,i]-refminy-nudge[1])* $
             posim[ii2d[0,i],ii2d[1,i]]
-    bgdimi3+=shift(refimi3,ii2d[0,i]-refminx-nudge,ii2d[1,i]-refminy-nudge)* $
+    bgdimi3+=fshift(refimi3,ii2d[0,i]-refminx-nudge[0],ii2d[1,i]-refminy-nudge[1])* $
             posim[ii2d[0,i],ii2d[1,i]]
 ;        if (i mod n_elements(ii)/10) eq 0 then $
 ;              print,i*100/n_elements(ii),'%...',format='($,I3,A)'
