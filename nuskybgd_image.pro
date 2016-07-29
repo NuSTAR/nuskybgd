@@ -17,12 +17,12 @@
 ;          or clobber keyword set.  If your PA follows the old convention, you
 ;          need to run projinitbgds.pro with /oldpa set instead.
 ;
-;   noremakeinstr --> If you run this multiple times without changing the model 
+;   noremakeinstr --> If you run this multiple times without changing the model
 ;                     parameters for the instrumental component, you can suppress
 ;                     the recreation of the instrumental reference spectrum by
 ;                     setting this keyword.
 ;
-;   instrnorms --> A 4-element array allowing the normalization of the instrumental 
+;   instrnorms --> A 4-element array allowing the normalization of the instrumental
 ;                  background in each chip to be varied -- to set this component
 ;                  10% higher than assumed by the parameter file values, set
 ;                  instrnorms=[1.1,1.1,1.1,1.1]
@@ -38,12 +38,12 @@
 pro nuskybgd_image,indir,obsid,imname,elow,ehigh,ab,bgddir,paramdir,paramfile,$
                 pa=pa,noremakeinstr=noremakeinstr,instrnorms=instrnorms,$
                 normap=normap,normfcxb=normfcxb,normneut=normneut,normgrxe=normgrxe,$
-                outim=outim,nobsub=nobsub,clobber=clobber,grxe=grxe
-                
+                outim=outim,nobsub=nobsub,clobber=clobber,grxe=grxe,noout=noout
+
 auxildir=getenv('NUSKYBGD_AUXIL')+'/'
 
 dir=indir
-if strmid(dir,strlen(dir)-1) ne '/' then dir=dir+'/' 
+if strmid(dir,strlen(dir)-1) ne '/' then dir=dir+'/'
 cldir=dir+obsid+'/event_cl/'
 if not size(bgddir,/type) then bgddir=''
 dir=cldir+bgddir+'/'
@@ -69,7 +69,8 @@ if size(normgrxe,/type) ne 0 then usernorm[3]=normgrxe
 
 fits_read,cldir+imname,data,header
 livetime=sxpar(header,'LIVETIME')
-projinitbgds,indir,obsid,header,ab,bgddir,pa=pa,clobber=clobber
+if size(noout,/type) eq 0 then $
+      projinitbgds,indir,obsid,header,ab,bgddir,pa=pa,clobber=clobber
 
 bgdim=fltarr(1000,1000)
 for j=0,3 do begin
@@ -150,8 +151,10 @@ for k=0,n_elements(prefixes)-1 do begin
     endfor
 endfor
 
-fits_read,cldir+imname,data,header
-fits_write,outim,bgdim,header
+if size(noout,/type) eq 0 then begin
+    fits_read,cldir+imname,data,header
+    fits_write,outim,bgdim,header
+endif else noout=bgdim
 if not keyword_set(nobsub) then begin
     namesplit=strsplit(imname,'.',/extract)
                                 ; Assume that the last . is one

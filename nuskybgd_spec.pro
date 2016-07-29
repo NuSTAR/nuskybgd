@@ -36,7 +36,8 @@
 
 pro nuskybgd_spec,indir,obsid,srcreg,specdir,bgddir,ab,bgddirref, $
       paramfile=paramfile,specname=specname,expfactor=expfactor,grxe=grxe,$
-      fakname=fakname,perfect=perfect,srcdir=srcdir,avgfcxb=avgfcxb
+      fakname=fakname,perfect=perfect,srcdir=srcdir,avgfcxb=avgfcxb,$
+      forcermf=forcermf,savexcm=savexcm
 
 auxildir=getenv('NUSKYBGD_AUXIL')+'/'
 caldbdir=getenv('CALDB')+'/'
@@ -77,7 +78,10 @@ pha=mrdfits(cldir+specname,1,hh,/silent)
 livetime=sxpar(hh,'LIVETIME')
 
 cldir=dir+obsid+'/event_cl/'
-mask=reg2mask(refdir+'bgdap0'+ab+'.fits',cldir+srcreg)
+if size(srcreg,/type) eq 7 then $
+      mask=reg2mask(refdir+'bgdap0'+ab+'.fits',cldir+srcreg) $
+  else if size(srcreg,/type) eq 2 then mask=srcreg $
+  else stop,'  NUSKYBGD_SPEC: Source region name/mask ill-defined.'
 print, "Created mask"
 backscl=total(mask)/1000.^2
 
@@ -108,7 +112,6 @@ readcol,auxildir+'ratios'+ab+'.dat',index1,index2,b0,b1,b2,b3,ebreak,/silent
 eline=eline[0:n_elements(width)-3]
 width=width[0:n_elements(width)-3]
 
-
 readcol,paramfile,p,/silent
 apnorm=p[0]*0.002353*apreg/32.
 fcxbnorm=p[1]*dettotfrac
@@ -125,48 +128,33 @@ if grxe then begin
     else stop,'NUSKYBGD_SPEC: Problem with GRXE values in parameter file'
 endif
 
-pt=loadnuabs(0)
-czt=loadnuabs(1)
-spt=total(pt[*,iab]*detwt)
-sczt=total(czt[*,iab]*detwt)
-
-namesplit=strsplit(specname,'.',/extract)
-if strmid(namesplit[0],strlen(namesplit[0])-4) eq '_g30' then $
-      rmfname=strmid(namesplit[0],0,strlen(namesplit[0])-4)+'.rmf' $
-      else rmfname=namesplit[0]+'.rmf'
+;namesplit=strsplit(specname,'.',/extract)
+;if strmid(namesplit[0],strlen(namesplit[0])-4) eq '_g30' then $
+;      rmfname=strmid(namesplit[0],0,strlen(namesplit[0])-4)+'.rmf' $
+;      else rmfname=namesplit[0]+'.rmf'
+h=headfits(cldir+specdir+'/'+specname,exten=1,/silent)
+rmfname=sxpar(h,'RESPFILE')
+if keyword_set(forcermf) then rmfname=forcermf
 
 if not keyword_set(fakname) then fakname=specname
 if not keyword_set(srcdir) then srcdir=cldir+specdir+'/' else srcdir=cldir+srcdir+'/'
 
 openw,lun,'temp.xcm',/get_lun
-printf,lun,'lmod nuabs'
-printf,lun,'model nuabs*(po*highecut)'
-printf,lun,str(spt)+' -1'
-printf,lun,str(sczt)+' -1'
-printf,lun,'0. -1'
-printf,lun,'0.9 -1'
+printf,lun,'model cutoffpl'
 printf,lun,'1.29 -1'
-printf,lun,str(apnorm)
-printf,lun,'1e-4 -1'
 printf,lun,'41.13 -1'
-;printf,lun,'4.8 -1'
-;printf,lun,str(neutnorm)
+printf,lun,str(apnorm)
 spawn,'rm -f '+srcdir+'/bgdap'+fakname
 printf,lun,'fakeit none & '+cldir+specdir+'/'+rmfname+' & '+auxildir+$
       'be.arf & '+ctstat+' &  & '+srcdir+'/bgdap'+fakname+' & '+$
       str(livetime*expfactor)
 printf,lun,'data none'
 
-printf,lun,'model nuabs*(po*highecut)'
-printf,lun,str(spt)+' -1'
-printf,lun,str(sczt)+' -1'
-printf,lun,'0. -1'
-printf,lun,'0.9 -1'
+printf,lun,'model cutoffpl'
 printf,lun,'1.29 -1'
+printf,lun,'41.13 -1'
 if keyword_set(avgfcxb) then printf,lun,str(0.002353*(2.45810736/3600.*1000.)^2* $
       backscl) else printf,lun,str(fcxbnorm)
-printf,lun,'1e-4 -1'
-printf,lun,'41.13 -1'
 spawn,'rm -f '+srcdir+'/bgdfcxb'+fakname
 printf,lun,'fakeit none & '+cldir+specdir+'/'+rmfname+' & '+$
 ;      caldbdir+'data/nustar/fpm/bcf/arf/nu'+ab+'20100101v004.arf & '+$
@@ -175,14 +163,9 @@ printf,lun,'fakeit none & '+cldir+specdir+'/'+rmfname+' & '+$
       str(livetime*expfactor)
 printf,lun,'data none'
 
-printf,lun,'model nuabs*(',format='($,A)'
+printf,lun,'model ',format='($,A)'
 for i=0,n_elements(eline)-1 do printf,lun,'lorentz+',format='($,A)'
-;printf,lun,'bknpo+phabs*po)'
-printf,lun,'apec)'
-printf,lun,str(spt)+' -1'
-printf,lun,str(sczt)+' -1'
-printf,lun,'0. -1'
-printf,lun,'0.9 -1'
+printf,lun,'apec'
 for i=0,n_elements(eline)-1 do begin
     printf,lun,str(eline[i])+' -1'
     printf,lun,str(width[i])+' -1'
@@ -192,9 +175,6 @@ printf,lun,str(index1[0])+' -1'
 printf,lun,str(index2[0])+' -1'
 printf,lun,str(ebreak[0])+' -1'
 printf,lun,str(pinstr[n_elements(eline)])
-;printf,lun,str(neut[0])
-;printf,lun,str(neut[1])
-;printf,lun,str(pinstr[n_elements(eline)+1])
 spawn,'rm -f '+srcdir+'/bgdinstr'+fakname
 printf,lun,'fakeit none & '+cldir+specdir+'/'+rmfname+' &  & '+ctstat+' &  & '+$
       srcdir+'/bgdinstr'+fakname+' & '+str(livetime*expfactor)
@@ -212,10 +192,6 @@ printf,lun,'data none'
 if grxe then begin
 
 printf,lun,'model nuabs*(gauss+atable{'+auxildir+'polarmodel.fits})'
-printf,lun,str(spt)+' -1'
-printf,lun,str(sczt)+' -1'
-printf,lun,'0. -1'
-printf,lun,'0.9 -1'
 printf,lun,'6.7 -1'
 printf,lun,'0.0 -1'
 printf,lun,str(grxenorm[0])
@@ -235,6 +211,7 @@ f = file_info(srcdir+'/bgdintcont'+fakname)
 IF f.exists THEN spawn, 'rm '+srcdir+'/bgdintcont'+fakname
 
 spawn,'xspec - temp.xcm'
+if keyword_set(savexcm) then spawn,'cp -f temp.xcm '+srcdir+'/'+savexcm
 spawn,'rm -f temp.xcm'
 
 
@@ -249,7 +226,7 @@ spawn,'pwd > '+srcdir+'/temp'
 cd,srcdir
 thisdir='' ;cldir+specdir+'/'
 if not grxe then begin
-  
+
       print,'mathpha '+thisdir+'bgdap'+fakname+'+'+thisdir+'bgdfcxb'+fakname+$
             '+'+thisdir+'bgdinstr'+fakname+'+'+thisdir+'bgdintcont'+fakname+$
             ' COUNTS '+thisdir+'bgd'+fakname+' '+$

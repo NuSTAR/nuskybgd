@@ -111,10 +111,13 @@ for ifiles=0,n_elements(files)-1 do begin
     if n_elements(size(badpix)) eq 4 then begin
         x=badpix.rawx
         y=badpix.rawy
-        for i=0,n_elements(x)-1 do begin
+        dt=badpix.time_stop-badpix.time
+        tobs=sxpar(hh,'TSTOP')-sxpar(hh,'TSTART')
+        for i=0,n_elements(x)-1 do if dt[i] gt 0.8*tobs or $
+              badpix[i].badflag[1] eq 2 then begin
             ii=where(pixmap eq x[i]+y[i]*32 and detnum eq idet)
             instrmap[ii]=0
-        endfor
+        endif
     endif
   endfor
   ii=where(instrmap gt 0)

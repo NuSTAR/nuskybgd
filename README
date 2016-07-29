@@ -23,4 +23,17 @@ can be checked out here:
 git clone https://github.com/wlandsman/IDLAstro.git astrolib-idl
 
 
+UPDATE 8/28/2015
+
+With this 'release', the use of the 'nuabs' XSpec model has been phased out
+of nuskybgd routines, so it no longer needs to be installed as a local model.
+Routines now assume that the absorption has been included directly in the
+response matrices, WHICH IS NOT DONE in nuproducts/numkrmf routines.  The
+new routine 'getspecrmf.pro' can extract spectral and RMF files appropriate 
+for use with 'nuskybgd_fitab.pro', or the default routines (which the
+'getspecnoarf.py' script calls) can be used to produce initial RMFs.  The
+'addabs2rmf.pro' routine can then add the detector absorption to the RMFs --
+just be sure to update the RESPFILE keyword in the spectra if the resulting
+RMF filenames change.
+
 
