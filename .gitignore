@@ -10,6 +10,7 @@ __pycache__
 .DS_Store
 
 ## NuSTAR_pysolar specific options
-auxil/*rmf
-auxil/*pha
+auxil/det*rmf
+auxil/aper*pha
+auxil/fcxb*pha
 
