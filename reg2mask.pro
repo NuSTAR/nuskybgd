@@ -184,8 +184,11 @@ for ir=0,n_elements(type)-1 do begin
       end
     else: stop,'REG2MASK: Region type '+type[ir]+' not supported.'
   endcase
-  ii=polyfillv(xy[*,0],xy[*,1],nx,ny)
-  if inclexcl[ir] then exclmask[ii]=1 else inclmask[ii]=1
+  jj=where(xy ge 0 and xy[*,0] lt nx and xy[*,1] lt ny)
+  if jj[0] ne -1 then begin
+    ii=polyfillv(xy[*,0],xy[*,1],nx,ny)
+    if inclexcl[ir] then exclmask[ii]=1 else inclmask[ii]=1
+  endif
 endfor
 
 ii=where(exclmask gt 0.5)

@@ -16,7 +16,7 @@
 ;          need to run projinitbgds.pro with /oldpa set instead.
 ;
 ;   paramfile --> name and full path for the output file:  If not set, the
-;                 parameter file is written to 
+;                 parameter file is written to
 ;                     indir+'/'+obsid+'/event_cl/'+specdir+'/bgdfitparams[A/B].dat
 ;
 ;   nocheck --> Set this if you trust that the fit will be good.  Otherwise
@@ -24,10 +24,10 @@
 ;               the fit.
 ;
 ;   fixfcxb --> Set to fix the focused CXB normalization to its nominal value.
-;               WARNING: The CXB variance could be 100% depending on the size 
+;               WARNING: The CXB variance could be 100% depending on the size
 ;                        of the regions, so using the nominal value is dangerous.
 ;               NOTE: Despite the warning above, the fCXB is linked between all
-;                     the spectra, which is also likely to be incorrect.  When in 
+;                     the spectra, which is also likely to be incorrect.  When in
 ;                     XSPEC, you can untie these if you like.
 
 
@@ -107,9 +107,6 @@ for iab=0,1 do begin
     ifactors[*,*,iab]=[[af0],[af1],[af2],[af3]]
 endfor
 
-pt=loadnuabs(0)
-czt=loadnuabs(1)
-
 bgdbackscl=fltarr(n_elements(bgdreg))
 bgddetfrac=fltarr(n_elements(bgdreg),4)
 bgdapfrac=fltarr(n_elements(bgdreg),4)
@@ -118,8 +115,6 @@ if grxe then bgdgrxefrac=fltarr(n_elements(bgdreg),4)
 if grxe then grxetot=fltarr(n_elements(bgdreg),4)
 dettot=fltarr(n_elements(bgdreg),4)
 detfrac=fltarr(n_elements(bgdreg),4)
-bgdpt=fltarr(n_elements(bgdreg))
-bgdczt=fltarr(n_elements(bgdreg))
 instrnorms=fltarr(n_elements(bgdreg),n_elements(eline[*,0])+2,4,2)
 
 for ibgd=0,n_elements(bgdreg)-1 do begin
@@ -164,20 +159,30 @@ bgdbackscl[ibgd]=total(bgddetfrac[ibgd,*])/1000.^2
 detfrac[ibgd,*]=bgddetfrac[ibgd,*]/total(bgddetfrac[ibgd,*])
 
 if abarr[ibgd] eq 'A' then iab=0 else if abarr[ibgd] eq 'B' then iab=1 else stop,':('
-bgdpt[ibgd,*]=total(pt[*,iab]*detfrac[ibgd,*])
-bgdczt[ibgd,*]=total(czt[*,iab]*detfrac[ibgd,*])
 
 endfor
 
-printf,lun,'lmod nuabs'
 printf,lun,'abund angr'
 for ibgd=0,n_elements(specname)-1 do begin
   if srcarr[ibgd] then subdir=srcdir else subdir=specdir
   ab=abarr[ibgd]
-  namesplit=strsplit(specname[ibgd],'.',/extract)
-  if strmid(namesplit[0],strlen(namesplit[0])-4) eq '_g30' then $
-        rmfname=strmid(namesplit[0],0,strlen(namesplit[0])-4)+'.rmf' $
-        else rmfname=namesplit[0]+'.rmf'
+  headspec=headfits(clsrcdir[iidir[ibgd]]+subdir+'/'+specname[ibgd],exten=1,/silent)
+  if file_test(clsrcdir[iidir[ibgd]]+sxpar(headspec,'RESPFILE')) then $
+        rmfname=sxpar(headspec,'RESPFILE') $
+      else if file_test(sxpar(headspec,'RESPFILE')) then begin
+          namesplit=strsplit(sxpar(headspec,'RESPFILE'),'/',/extract)
+          rmfname=namesplit[n_elements(namesplit)-1]
+      endif else begin
+          namesplit=strsplit(specname[ibgd],'.',/extract)
+          if strmid(namesplit[0],strlen(namesplit[0])-4) eq '_g30' then $
+                rmfname=strmid(namesplit[0],0,strlen(namesplit[0])-4)+'.rmf' $
+          else if strmid(namesplit[0],strlen(namesplit[0])-3) eq '_g3' then $
+                rmfname=strmid(namesplit[0],0,strlen(namesplit[0])-3)+'.rmf' $
+          else rmfname=namesplit[0]+'.rmf'
+      endelse
+  if not file_test(cldir[iidir[ibgd]]+subdir+'/'+rmfname) then $
+        stop,'NUSKYBGD_FITAB: Response file '+ $
+              cldir[iidir[ibgd]]+subdir+'/'+rmfname+' not found.'
   printf,lun,'data '+str(ibgd+1)+':'+str(ibgd+1)+' '+cldir[iidir[ibgd]]+$
         subdir+'/'+specname[ibgd]
   printf,lun,'back '+str(ibgd+1)+' none'
@@ -201,31 +206,26 @@ abref=abarr[0]
 b0=0
 ig=-1000
 if keyword_set(fixap) then fixap=-1. else fixap=1.
-printf,lun,'model 2:apbgd nuabs*(po*highecut)'
+printf,lun,'model 2:apbgd cutoffpl'
 for ibgd=0,n_elements(specname)-1 do begin
-    printf,lun,str(bgdpt[ibgd])+' -1'
-    printf,lun,str(bgdczt[ibgd])+' -1'
-    printf,lun,'0. -1'
-    printf,lun,'0.9 -1'
     printf,lun,'1.29 -1'
+    printf,lun,'41.13 -1'
     if igrp[ibgd] ne ig then begin
         b0=ibgd
         ig=igrp[ibgd]
         printf,lun,str(0.002353/32.*total(bgdapfrac[ibgd,*]))+$
               ' '+str(fixap*0.0001)
     endif else begin
-        printf,lun,'=apbgd:'+str(6+b0*8)+'*'+$
+        printf,lun,'=apbgd:'+str(3+b0*3)+'*'+$
               str(total(bgdapfrac[ibgd,*])/total(bgdapfrac[b0,*]))
     endelse
-    printf,lun,'1e-4 -1'
-    printf,lun,'41.13 -1'
 endfor
 b0=0
 for i=0,n_elements(abarr)-1 do if abarr[b0] eq abarr[0] then b0++
 if keyword_set(tieap) then for i=1,max(iidir) do begin
-    printf,lun,'newpar apbgd:'+str(6+i*8*b0*2)+'=apbgd:6*'+$
+    printf,lun,'newpar apbgd:'+str(3+i*3*b0*2)+'=apbgd:3*'+$
           str(total(bgdapfrac[b0*2,*])/total(bgdapfrac[0,*]))
-    printf,lun,'newpar apbgd:'+str(6+i*8*b0*2+8*b0)+'=apbgd:'+str(6+8*b0)+'*'+$
+    printf,lun,'newpar apbgd:'+str(3+i*3*b0*2+3*b0)+'=apbgd:'+str(3+3*b0)+'*'+$
           str(total(bgdapfrac[b0*3,*])/total(bgdapfrac[b0,*]))
 endfor
 
@@ -233,15 +233,11 @@ b0=0
 ig=-1000
 bb=n_elements(eline[*,0])
 if abref eq 'A' then iab=0 else iab=1
-printf,lun,'model 3:intbgd nuabs*(',format='($,A)'
+printf,lun,'model 3:intbgd ',format='($,A)'
 for i=0,n_elements(eline[*,0])-1 do printf,lun,'lorentz+',format='($,A)'
-printf,lun,'apec)'
+printf,lun,'apec'
 for ibgd=0,n_elements(specname)-1 do begin
   if abarr[ibgd] eq 'A' then iab=0 else iab=1
-  printf,lun,'=apbgd:'+str(ibgd*8+1)
-  printf,lun,'=apbgd:'+str(ibgd*8+2)
-  printf,lun,'=apbgd:'+str(ibgd*8+3)
-  printf,lun,'=apbgd:'+str(ibgd*8+4)
   for i=0,n_elements(eline[*,0])-1 do begin
       printf,lun,str(eline[i,iab])+' -1'
       printf,lun,str(width[i,iab])+' -1'
@@ -249,7 +245,7 @@ for ibgd=0,n_elements(specname)-1 do begin
           printf,lun,str(total(ifactors[i,*,iab]*detfrac[ibgd,*]))+' '+ $
                 str(0.1*total(ifactors[i,*,iab]*detfrac[ibgd,*]))
       endif else begin
-          printf,lun,'=intbgd:'+str(7+b0*(n_elements(eline[*,0])*3+8)+i*3)+$
+          printf,lun,'=intbgd:'+str(3+b0*(n_elements(eline[*,0])*3+4)+i*3)+$
                 '*'+str(total(ifactors[i,*,iab]*bgddetfrac[ibgd,*])/ $
                 total(ifactors[i,*,iab]*bgddetfrac[b0,*]))
       endelse
@@ -261,8 +257,8 @@ for ibgd=0,n_elements(specname)-1 do begin
       printf,lun,str(total(ifactors[bb,*,iab]*detfrac[ibgd,*]))+' '+ $
             str(0.1*total(ifactors[bb,*,iab]*detfrac[ibgd,*]))
   endif else begin
-      printf,lun,'=intbgd:'+str(4+n_elements(eline[*,0])*3+4+$
-            b0*(n_elements(eline[*,0])*3+8))+'*'+$
+      printf,lun,'=intbgd:'+str(n_elements(eline[*,0])*3+4+$
+            b0*(n_elements(eline[*,0])*3+4))+'*'+$
             str(total(ifactors[n_elements(eline[*,0]),*,iab]*$
             bgddetfrac[ibgd,*])/total(ifactors[n_elements(eline[*,0]),*,iab]*$
             bgddetfrac[b0,*]))
@@ -290,22 +286,17 @@ bb=n_elements(where(igrp eq 1))
 if keyword_set(fixfcxb) then fixfree=' -1e-6' else fixfree=' 1e-6'
 ; uses backscale to get area --> this is fraction of image pixels inside region,
 ; with pixel scale 2.45810736 arcsec/pixel (1000x1000 pixel image)
-printf,lun,'model 4:fcxb nuabs*(po*highecut)'
+printf,lun,'model 4:fcxb cutoffpl'
 for ibgd=0,n_elements(specname)-1 do begin
-    printf,lun,'=apbgd:'+str(ibgd*8+1)
-    printf,lun,'=apbgd:'+str(ibgd*8+2)
-    printf,lun,'=apbgd:'+str(ibgd*8+3)
-    printf,lun,'=apbgd:'+str(ibgd*8+4)
-    printf,lun,'=apbgd:5'
+    printf,lun,'=apbgd:1'
+    printf,lun,'=apbgd:2'
     if abs(igrp[ibgd]) ne ig then begin
         b0=ibgd
         ig=igrp[ibgd]
     endif
     if igrp[ibgd] gt 0 then printf,lun,$
               str(0.002353*1.5*(2.45810736/3600.*1000.)^2*bgdbackscl[ibgd])+fixfree $
-        else printf,lun,'=fcxb:'+str((ibgd-bb)*8+6)
-    printf,lun,'=apbgd:7'
-    printf,lun,'=apbgd:8'
+        else printf,lun,'=fcxb:'+str((ibgd-bb)*3+3)
 endfor
 
 b0=0
@@ -334,20 +325,12 @@ if grxe then begin
 abref=abarr[0]
 b0=0
 printf,lun,'model 6:grxe nuabs*(gauss+atable{'+auxildir+'polarmodel.fits})'
-printf,lun,str(bgdpt[0])+' -1'
-printf,lun,str(bgdczt[0])+' -1'
-printf,lun,'0. -1'
-printf,lun,'0.9 -1'
 printf,lun,'6.7 -1'
 printf,lun,'0. -0.001'
 printf,lun,'1e-4 1e-5'
 printf,lun,'0.6 -1'
 printf,lun,'1e-4 1e-5'
 if n_elements(specname) gt 1 then for ibgd=1,n_elements(specname)-1 do begin
-  printf,lun,str(bgdpt[ibgd])+' -1'
-  printf,lun,str(bgdczt[ibgd])+' -1'
-  printf,lun,'0. -1'
-  printf,lun,'0.9 -1'
   printf,lun,'6.7 -1'
   printf,lun,'0. -0.001'
   if abarr[ibgd] ne abref and b0 eq 0 then begin
@@ -356,9 +339,9 @@ if n_elements(specname) gt 1 then for ibgd=1,n_elements(specname)-1 do begin
     printf,lun,'0.6 -1'
     printf,lun,'1e-4 1e-5'
   endif else begin
-    printf,lun,'=grxe:'+str(7+b0*9)+'*'+str(total(bgdgrxefrac[ibgd,*])/total(bgdgrxefrac[b0,*]))
+    printf,lun,'=grxe:'+str(3+b0*5)+'*'+str(total(bgdgrxefrac[ibgd,*])/total(bgdgrxefrac[b0,*]))
     printf,lun,'0.6 -1'
-    printf,lun,'=grxe:'+str(9+b0*9)+'*'+str(total(bgdgrxefrac[ibgd,*])/total(bgdgrxefrac[b0,*]))
+    printf,lun,'=grxe:'+str(3+b0*5)+'*'+str(total(bgdgrxefrac[ibgd,*])/total(bgdgrxefrac[b0,*]))
   endelse
 endfor
 
@@ -377,10 +360,10 @@ if not keyword_set(nocheck) and n_elements(obsid) eq 1 then $
       '  then run @'+clspecdir[0]+'bgdparams.xcm to complete.\n----------"' $
   else if n_elements(obsid) eq 1 then printf,lun,'@'+clspecdir[0]+'bgdparams.xcm' $
   else begin
-    printf,lun,'tclout param apbgd:6'
+    printf,lun,'tclout param apbgd:3'
     printf,lun,'scan $xspec_tclout "%20f" apna'
     b0=n_elements(where(igrp eq 1))
-    printf,lun,'tclout param apbgd:'+str(6+b0*8)
+    printf,lun,'tclout param apbgd:'+str(3+b0*3)
     printf,lun,'scan $xspec_tclout "%20f" apnb'
     printf,lun,'set norm [expr $apna*'+str(32./0.002353/total(bgdapfrac[0,*]))+']'
     printf,lun,'echo "A: $apna x '+str(32./0.002353/total(bgdapfrac[0,*]))+'"'
@@ -401,19 +384,19 @@ for iab=0,1 do begin
  if (absave eq 'A' and iab eq 0) or (absave eq 'B' and iab eq 1) or absave eq 'AB' $
       then begin
   printf,lun2,'set id [open '+cldir[0]+'bgdparams'+ab[iab]+'.dat w]'
-  printf,lun2,'tclout param apbgd:'+str(6+iab*b0*8)
+  printf,lun2,'tclout param apbgd:'+str(3+iab*b0*3)
   printf,lun2,'scan $xspec_tclout "%20f" p'
   printf,lun2,'puts $id "$p"'
   if absave eq 'AB' then begin
       for i=b0*iab,b0*(iab+1)-1 do begin
-          printf,lun2,'tclout param fcxb:'+str(6+i*8)
+          printf,lun2,'tclout param fcxb:'+str(3+i*3)
           printf,lun2,'scan $xspec_tclout "%20f" p'+str(i)
       endfor
       printf,lun2,'puts $id "',format='($,A)'
       for i=b0*iab,b0*(iab+1)-1 do printf,lun2,'$p'+str(i)+' ',format='($,A)'
   endif else begin
       for i=0,n_elements(bgdreg)-1 do begin
-          printf,lun2,'tclout param fcxb:'+str(6+i*8)
+          printf,lun2,'tclout param fcxb:'+str(3+i*3)
           printf,lun2,'scan $xspec_tclout "%20f" p'+str(i)
       endfor
       printf,lun2,'puts $id "',format='($,A)'
@@ -425,18 +408,18 @@ for iab=0,1 do begin
   printf,lun2,'puts $id "$p"'
 ;  if iab eq 0 then eline=aeline else eline=beline
   for i=0,n_elements(eline[*,0])-1 do begin
-      printf,lun2,'tclout param intbgd:'+str(7+3*i+iab*b0*(4+n_elements(eline[*,0])*3+4))
+      printf,lun2,'tclout param intbgd:'+str(3+3*i+iab*b0*(n_elements(eline[*,0])*3+4))
       printf,lun2,'scan $xspec_tclout "%20f" p'
       printf,lun2,'puts $id "$p"'
   endfor
-  printf,lun2,'tclout param intbgd:'+str((4+n_elements(eline[*,0])*3+4)*(iab*b0+1))
+  printf,lun2,'tclout param intbgd:'+str((n_elements(eline[*,0])*3+4)*(iab*b0+1))
   printf,lun2,'scan $xspec_tclout "%20f" p'
   printf,lun2,'puts $id "$p"'
   if grxe then begin
-      printf,lun2,'tclout param grxe:'+str(7+iab*b0*9)
+      printf,lun2,'tclout param grxe:'+str(3+iab*b0*5)
       printf,lun2,'scan $xspec_tclout "%20f" p'
       printf,lun2,'puts $id "$p"'
-      printf,lun2,'tclout param grxe:'+str(9+iab*b0*9)
+      printf,lun2,'tclout param grxe:'+str(3+iab*b0*5)
       printf,lun2,'scan $xspec_tclout "%20f" p'
       printf,lun2,'puts $id "$p"'
   endif
@@ -462,7 +445,7 @@ if (absave eq 'A' and iab eq 0) or (absave eq 'B' and iab eq 1) or absave eq 'AB
       then begin
 
 ;if iab eq 0 then begin
-;    eline=aeline 
+;    eline=aeline
 ;    ifactors_orig=aifactors_orig
 ;endif else begin
 ;    eline=beline
@@ -492,10 +475,14 @@ if grxe then grxenorm=[(params[n_elements(params)-2])/total(bgdgrxefrac[iab*b0,*
 ;ifactors=ifactors_orig
 instrnorms=fltarr(n_elements(eline[*,0])+1,4)
 for i=0,n_elements(instrnorms[*,0])-1 do $
-      instrnorms[i,*]=params[i+3]/total(reform(ifactors[i,*,iab],4)*reform(bgddetfrac[0+iab*b0,*],4)/reform(dettot[0+iab*b0,*],4))*reform(ifactors[i,*,iab],4)
+      instrnorms[i,*]=params[i+3]/total(reform(ifactors[i,*,iab],4)* $
+            reform(bgddetfrac[0+iab*b0,*],4)/reform(dettot[0+iab*b0,*],4))*$
+            reform(ifactors[i,*,iab],4)
 i=n_elements(eline[*,0])+1
 neutnorm=fltarr(4)
-neutnorm=params[2]/total(reform(ifactors[i,*,iab],4)*reform(bgddetfrac[0+iab*b0,*],4)/reform(dettot[0+iab*b0,*],4))*reform(ifactors[i,*,iab],4)
+neutnorm=params[2]/total(reform(ifactors[i,*,iab],4)* $
+      reform(bgddetfrac[0+iab*b0,*],4)/reform(dettot[0+iab*b0,*],4))* $
+      reform(ifactors[i,*,iab],4)
 
 printf,lun,apnorm,$
   '   # Factor relative to reference norm of PL for aperture component',$
