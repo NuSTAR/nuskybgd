@@ -1,0 +1,15 @@
+# Compiled files
+*.py[cod]
+*.a
+*.o
+*.so
+__pycache__
+
+
+# Mac OSX
+.DS_Store
+
+## NuSTAR_pysolar specific options
+auxil/*rmf
+auxil/*pha
+
