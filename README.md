@@ -1,4 +1,5 @@
-# nuskybgd: An IDL module for producing simulated background for NuSTAR.
+# nuskybgd:
+# An IDL module for producing simulated background for NuSTAR.
 
 
 ## Overview
@@ -46,6 +47,11 @@ Installation
 
 3. Add the the nuskybgd directory to your default IDL path.
 
+	If you have an IDL_STARTUP file already, add the following lines to it:
+	
+	nuskybgd_code = getenv('NUSKYBGD')                                                                                                                                                                
+	!path = expand_path('+'+nuskybgd_code)+':'+ $
+                    !path
 
 ## UPDATE 8/28/2015
 
