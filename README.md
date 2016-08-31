@@ -1,8 +1,8 @@
 # nuskybgd:
-# An IDL module for producing simulated background for NuSTAR.
+## An IDL module for producing simulated background for NuSTAR.
 
 
-## Overview
+### Overview
 
 nuskybgd is code for simulating the NuSTAR background the Cosmix X-ray
 Background (CXB). It simulates the X-rays that are focued throught the
@@ -12,7 +12,7 @@ optics bench and through the aperture stop.
 In /docs there is a detailed documentation and walk through. Please
 read this first before attempting to use this software.
 
-## Reference:
+### Reference:
 
 This code was originally written by Dan Wik, and was originally described in the
 appendix of the paper here:
@@ -22,11 +22,16 @@ http://adsabs.harvard.edu/cgi-bin/bib_query?arXiv:1403.2722
 If you use nuskbygd, please reference this paper.
 
 
-## Warnings:
+### Warnings:
 
-This code is offered "as is" for the user. Users should be warned that
-using nuskbygd occasionally requires some tweaking of the scripts to
-work for specific cases.
+This code is offered "as is" for the user.
+
+Users should be warned that using nuskbygd occasionally requires some tweaking of the scripts to work for specific cases.
+
+If you find a problem, then please start an issue above.
+
+
+### Dependencies:
 
 Please also note that nuskbygd relies (heavily) on the AstroLib, which
 can be checked out here:
@@ -34,10 +39,11 @@ can be checked out here:
 git clone https://github.com/wlandsman/IDLAstro.git astrolib-idl
 
 
+
 Installation
 ------------
 
-1. Clone our project from github or download a release tarball
+1. Clone the project from github
 
     $ git clone https://github.com/NuSTAR/nuskybgd.git
 
@@ -53,6 +59,8 @@ Installation
 	!path = expand_path('+'+nuskybgd_code)+':'+ $
                     !path
 
+	If you don't have an IDL_STARTUO file (i.e. if echo $IDL_STARTUP doesn't return anything), then create a new file somewhere (~/idl_startup.pro) and add the above lines to it.	
+	
 ## UPDATE 8/28/2015
 
 With this 'release', the use of the 'nuabs' XSpec model has been phased out
@@ -65,3 +73,7 @@ for use with 'nuskybgd_fitab.pro', or the default routines (which the
 'addabs2rmf.pro' routine can then add the detector absorption to the RMFs --
 just be sure to update the RESPFILE keyword in the spectra if the resulting
 RMF filenames change.
+
+## Future work
+
+Sometime in the (distant) future this will be ported out of IDL and into perl (for FTOOL compatibility) or python (using astropy). But this is all TBD...
