@@ -59,7 +59,7 @@ Installation
 	!path = expand_path('+'+nuskybgd_code)+':'+ $
                     !path
 
-	If you don't have an IDL_STARTUO file (i.e. if echo $IDL_STARTUP doesn't return anything), then create a new file somewhere (~/idl_startup.pro) and add the above lines to it.	
+	If you don't have an IDL_STARTUP file (i.e. if echo $IDL_STARTUP doesn't return anything), then create a new file somewhere (~/idl_startup.pro) and add the above lines to it.	
 	
 ## UPDATE 8/28/2015
 
