@@ -1,7 +1,6 @@
 # nuskybgd:
 ## An IDL module for producing simulated background for NuSTAR.
 
-
 ### Overview
 
 nuskybgd is code for simulating the NuSTAR background the Cosmix X-ray
@@ -67,6 +66,11 @@ Installation
 	$ echo "export IDL_STARTUP=~/idl_startup.pro" >> ~/.bash_profile
 	
 	This will ensure that when you start your bash shell again that IDL will find the new IDL_STARTUP file.
+
+4. See the [ABC Guide](nuskybgd_ABC.md) for how to proceed.
+
+	We generally recommend maintaining a record of your work in a separate IDL script file that can be copy and pasted to the IDL command line. `nuskbygd` is interactive enough that we do *not* generally recommend automating the analysis. 
+
 	
 ## UPDATE 8/28/2015
 
