@@ -50,7 +50,7 @@ Installation
 	
 	
 	```IDL
-	nuskybgd_code = getenv('NUSKYBGD')                                                                                                                                                                
+	nuskybgd_code = getenv('NUSKYBGD')+'/pro'                                                                                                                                                                
 	!path = expand_path('+'+nuskybgd_code)+':'+ $
                     !path
 	```
@@ -66,7 +66,7 @@ Installation
 	
 	This will ensure that when you start your bash shell again that IDL will find the new IDL_STARTUP file.
 
-4. See the [ABC Guide](nuskybgd_ABC.md) for how to proceed.
+4. See the [ABC Guide](ABC_Guide.md) for how to proceed.
 
 	We generally recommend maintaining a record of your work in a separate IDL script file that can be copy and pasted to the IDL command line. `nuskbygd` is interactive enough that we do *not* generally recommend automating the analysis. 
 
