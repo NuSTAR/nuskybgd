@@ -3,10 +3,10 @@
 ---
 
 # Table of Contents
-1. [Disclaimer](#Disclaimer)
-2. [Scope](#scope)
-3. [About](#about)
-4. [Using `nuskbygd`](#using)
+1. [Disclaimer and Scope](#disclaimer)
+2. [About](#about)
+3. [Setup](#setup)
+4. [Walkthrough](#walkthrough)
 
 ---
 
@@ -14,22 +14,20 @@
 
 Questions, comments, or bugs should (please!) be reported via the [GitHub issues page](https://github.com/NuSTAR/nuskybgd).
 
-
----
-
 ## Scope
 
-This is an ABC-like example for using the nuskbygd tasks.
+This is an ABC-like example for using the `nuskbygd` tasks.
 
 It's assumed that you have a working installation of the following:
 
-1. [HEASoft](https://heasarc.gsfc.nasa.gov/lheasoft/) including XSPEC.
+1. [HEASoft](https://heasarc.gsfc.nasa.gov/lheasoft/) including `XSPEC`.
 2. The [NuSTAR CALDB](http://heasarc.gsfc.nasa.gov/docs/heasarc/caldb/caldb_intro.html). 
 3. IDL (for now).
 4. ds9 (for defining source and background regions).
-4. nuskybgd 
-	* See the [README](README.md) file for how to set up the nuksbygd code in your local IDL installation.
+4. `nuskybgd` 
+	* See the [README](README.md) file for how to set up the `nuskybgd` code in your local IDL installation.
 
+> **NOTE**: We recommend maintaining a record of your work in a separate IDL script file that can be copy and pasted to the IDL command line. `nuskbygd` is interactive enough that we do *not* generally recommend automating the analysis. 
 
 ---
 
@@ -73,7 +71,7 @@ echo $NUSKBYGD
 
 ---
 
-# Using `nuskybgd`
+# Walkthrough
 
 ## Set the path that you're going to use.
 
