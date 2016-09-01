@@ -18,8 +18,7 @@ appendix of the paper here:
 
 http://adsabs.harvard.edu/cgi-bin/bib_query?arXiv:1403.2722
 
-If you use nuskbygd, please reference this paper.
-
+If you use `nuskybgd`, please reference this paper.
 
 ### Warnings:
 
@@ -32,38 +31,38 @@ If you find a problem, then please start an issue above.
 
 ### Dependencies:
 
-Please also note that nuskbygd relies (heavily) on the AstroLib, which
-can be checked out here:
-
-git clone https://github.com/wlandsman/IDLAstro.git astrolib-idl
-
-
+Please also note that nuskbygd relies (heavily) on the [AstroLib](https://github.com/wlandsman/IDLAstro). Here we assume that you have an up-to-date version of the AstroLib and know how to put these scripts into your IDL `!path` variable.
 
 Installation
 ------------
 
 1. Clone the project from github
 
-    $ git clone https://github.com/NuSTAR/nuskybgd.git
+    `git clone https://github.com/NuSTAR/nuskybgd.git`
 
 2. Go to the nuskybgd directory and initialize the environment variaibles
 
-    $ source initialize_nuskybgd.sh
+	`source initialize_nuskybgd.sh`
 
 3. Add the the nuskybgd directory to your default IDL path.
 
 	If you have an IDL_STARTUP file already, add the following lines to it:
 	
+	
+	```IDL
 	nuskybgd_code = getenv('NUSKYBGD')                                                                                                                                                                
 	!path = expand_path('+'+nuskybgd_code)+':'+ $
                     !path
+	```
 
-	If you don't have an IDL_STARTUP file (i.e. if echo $IDL_STARTUP doesn't return anything), then create a new file somewhere (~/idl_startup.pro) and add the above lines to it.	
+	If you don't have an `IDL_STARTUP` file (i.e. if `echo $IDL_STARTUP` doesn't return anything), then create a new file somewhere (`~/idl_startup.pro`) and add the above lines to it.	
 	
 	Then do the following:
 	
-	$ export IDL_STARTUP=~/idl_startup.pro
-	$ echo "export IDL_STARTUP=~/idl_startup.pro" >> ~/.bash_profile
+	```bash
+	export IDL_STARTUP=~/idl_startup.pro
+	echo "export IDL_STARTUP=~/idl_startup.pro" >> ~/.bash_profile
+	```
 	
 	This will ensure that when you start your bash shell again that IDL will find the new IDL_STARTUP file.
 
@@ -71,13 +70,11 @@ Installation
 
 	We generally recommend maintaining a record of your work in a separate IDL script file that can be copy and pasted to the IDL command line. `nuskbygd` is interactive enough that we do *not* generally recommend automating the analysis. 
 
-	
-## UPDATE 8/28/2015
 
-With this 'release', the use of the 'nuabs' XSpec model has been phased out
+> **NOTE**: As of 8/28/2015 the use of the 'nuabs' XSpec model has been phased out
 of nuskybgd routines, so it no longer needs to be installed as a local model.
 Routines now assume that the absorption has been included directly in the
-response matrices, WHICH IS NOT DONE in nuproducts/numkrmf routines.  The
+response matrices. This is *not done* in nuproducts/numkrmf routines. The
 new routine 'getspecrmf.pro' can extract spectral and RMF files appropriate 
 for use with 'nuskybgd_fitab.pro', or the default routines (which the
 'getspecnoarf.py' script calls) can be used to produce initial RMFs.  The

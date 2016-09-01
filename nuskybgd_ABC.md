@@ -12,7 +12,7 @@
 
 ## Disclaimer
 
-Questions, comments, or bugs should (please!) be reported via the [GitHub issues page](https://github.com/NuSTAR/nuskybgd).
+Questions, comments, or bugs should (please!) be reported via the [GitHub issues page](https://github.com/NuSTAR/nuskybgd/issues).
 
 ## Scope
 
@@ -27,7 +27,7 @@ It's assumed that you have a working installation of the following:
 4. `nuskybgd` 
 	* See the [README](README.md) file for how to set up the `nuskybgd` code in your local IDL installation.
 
-> **NOTE**: We recommend maintaining a record of your work in a separate IDL script file that can be copy and pasted to the IDL command line. `nuskbygd` is interactive enough that we do *not* generally recommend automating the analysis. 
+> **NOTE**: We recommend maintaining a record of your work in a separate IDL script file that can be copy and pasted to the IDL command line. `nuskybgd` is interactive enough that we do *not* generally recommend automating the analysis. 
 
 ---
 
