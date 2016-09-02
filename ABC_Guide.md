@@ -160,11 +160,16 @@ bgdreg=[core+'A'+'.reg', core+'B'+'.reg']
 spec=[core+'A'+'_sr.pha', core+'B'+'_sr.pha']
 ```
 
-Now we call the main `nuskbygd_fitab` script below. 
+Now we project the backgrounds onto the sky and run the main `nuskbygd_fitab` script below. 
 
 
 
 ```IDL
+
+fits_read,dir+'/'+obsid+'/event_cl/imA3to20keV.fits',blah,header
+projinitbgds,dir,obsid,header,'A','bgd', /clobber
+fits_read,dir+'/'+obsid+'/event_cl/imB3to20keV.fits',blah,header
+projinitbgds,dir,obsid,header,'B','bgd', /clobber
 nuskybgd_fitab,dir,obsid,bgdreg,'bgdspec',spec,'AB','bgd'
 ```
 
