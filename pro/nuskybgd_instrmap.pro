@@ -22,12 +22,20 @@ gw=[1.00000,    0.124902,    0.117130,    0.114720,    0.118038,   0.0114296,$
    0.00180735,  0.00140006,  0.00169704,  0.00189220,  0.00160371,  0.00150188,$
    0.00168007, 0.000296983, 0.000364864]
 
+
+scrnm='nuskbygd_instrmap: '
+
 caldb=getenv('CALDB')+'/'
+if strcmp(caldb, '/') then message, scrnm+'Please set the $CALDB environment first.'
+
 auxildir=getenv('NUSKYBGD_AUXIL')+'/'
+if strcmp(auxildir, '/') then message, scrnm+'Please set the $NUSKYBGD_AUXIL environment first.'
 
 dir=indir
 if strmid(dir,strlen(dir)-1) ne '/' then dir=dir+'/'
 cldir=dir+obsid+'/event_cl/'
+
+if ~file_test(cldir, /directory) then message, scrnm+cldir+' does not exist.'
 
 if size(bgddir,/type) eq 0 then outdir=cldir else begin
     outdir=cldir+bgddir+'/'
