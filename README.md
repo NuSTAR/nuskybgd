@@ -50,7 +50,7 @@ Installation
 	
 	
 	```IDL
-	nuskybgd_code = getenv('NUSKYBGD')+'/pro'                                                                                                                                                                
+	nuskybgd_code = getenv('NUSKYBGD')+'/pro'
 	!path = expand_path('+'+nuskybgd_code)+':'+ $
                     !path
 	```
