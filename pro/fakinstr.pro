@@ -24,7 +24,7 @@ neut=[eline[n_elements(f0)-1],width[n_elements(f0)-1]]
 eline=eline[0:n_elements(width)-3]
 width=width[0:n_elements(width)-3]
 
-caldb=getenv('CALDB')+'/'
+;caldb=getenv('CALDB')+'/'
 ;pt=loadnuabs(0)
 ;czt=loadnuabs(1)
 readcol,paramfile,p0,p1,p2,p3,/silent,skipline=3
@@ -37,7 +37,10 @@ if idet eq 0 then p=p0 else if idet eq 1 then p=p1 else if idet eq 2 then p=p2 $
 ;spt=pt[idet,iab]
 ;sczt=czt[idet,iab]
 
-rmfname=caldb+'data/nustar/fpm/cpf/rmf/nu'+ab+'cutdet'+str(idet)+'_20100101v001.rmf'
+rmfname=getcaldbfile('rmf',ab,idet)
+;rmfname=caldb+'data/nustar/fpm/cpf/rmf/nu'+ab+'cutdet'+str(idet)+'_20100101v001.rmf'
+spawn,'cp '+rmfname+' '+cldir+'t1.rmf'
+addabs2rmf,cldir+'t1.rmf',ab,idet,'',cldir,cldir+'t2.rmf'
 fakname='instrbgdfit'+ab+'_det'+str(idet)+'.pha'
 
 openw,lun,'temp.xcm',/get_lun
@@ -58,13 +61,15 @@ printf,lun,str(p[n_elements(eline)])
 ;printf,lun,str(neut[1])
 ;printf,lun,str(p[n_elements(eline)+1])
 spawn,'rm -f '+cldir+fakname
-printf,lun,'fakeit none & '+rmfname+' &  & '+ctstat+' &  & '+$
+printf,lun,'fakeit none & '+cldir+'t2.rmf &  & '+ctstat+' &  & '+$
       cldir+fakname+' & 1e9'
 printf,lun,'exit'
 free_lun,lun
 
 spawn,'xspec - temp.xcm'
 spawn,'rm -f temp.xcm'
+spawn,'rm -f '+cldir+'t1.rmf'
+spawn,'rm -f '+cldir+'t2.rmf'
 
 endfor
 
