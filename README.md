@@ -1,16 +1,6 @@
 # nuskybgd:
 ## An IDL module for producing simulated background for NuSTAR.
 
-This branch fixes a bug where the detector absorption was not included
-in output background spectra or images.
-In general, this caused a % level bias at low energies, but could be important
-for faint observations.
-The background does not have to be refit with this update; only nuskybgd_image.pro
-and/or nuskybgd_spec.pro need to be rerun.
-For nuskybgd_image.pro, DO NOT set the /noremakeinstr, as these files need to
-be remade (but once made for a given observation, the keyword can be used again).
-Please report any issues to D. Wik.
-
 ### Overview
 
 nuskybgd is code for simulating the NuSTAR background the Cosmix X-ray
@@ -84,13 +74,14 @@ Installation
 > **NOTE**: As of 8/28/2015 the use of the 'nuabs' XSpec model has been phased out
 of nuskybgd routines, so it no longer needs to be installed as a local model.
 Routines now assume that the absorption has been included directly in the
-response matrices. This is *not done* in nuproducts/numkrmf routines. The
-new routine 'getspecrmf.pro' can extract spectral and RMF files appropriate 
-for use with 'nuskybgd_fitab.pro', or the default routines (which the
-'getspecnoarf.py' script calls) can be used to produce initial RMFs.  The
-'addabs2rmf.pro' routine can then add the detector absorption to the RMFs --
-just be sure to update the RESPFILE keyword in the spectra if the resulting
-RMF filenames change.
+response matrices. Code adjustments to address this were introduced in v0.3.
+
+In general, this caused a % level bias at low energies, but could be important
+for faint observations. The background does not have to be refit with this update;
+only nuskybgd_image.pro and/or nuskybgd_spec.pro need to be rerun.
+For nuskybgd_image.pro, DO NOT set the /noremakeinstr, as these files need to
+be remade (but once made for a given observation, the keyword can be used again).
+Please report any issues to D. Wik.
 
 ## Future work
 
