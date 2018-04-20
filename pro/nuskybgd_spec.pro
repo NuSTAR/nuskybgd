@@ -80,7 +80,8 @@ livetime=sxpar(hh,'LIVETIME')
 cldir=dir+obsid+'/event_cl/'
 if size(srcreg,/type) eq 7 then $
       mask=reg2mask(refdir+'bgdap0'+ab+'.fits',cldir+srcreg) $
-  else if size(srcreg,/type) eq 2 then mask=srcreg $
+; addition of addabs2rmf below means we need the source region
+;  else if size(srcreg,/type) eq 2 then mask=srcreg $
   else stop,'  NUSKYBGD_SPEC: Source region name/mask ill-defined.'
 print, "Created mask"
 backscl=total(mask)/1000.^2
@@ -135,6 +136,11 @@ endif
 h=headfits(cldir+specdir+'/'+specname,exten=1,/silent)
 rmfname=sxpar(h,'RESPFILE')
 if keyword_set(forcermf) then rmfname=forcermf
+
+if file_test(cldir+specdir+'temp.rmf') then spawn,'rm -f '+cldir+specdir+'temp.rmf'
+addabs2rmf,cldir+specdir+'/'+rmfname,ab,refdir+'bgdap0'+ab+'.fits',cldir+srcreg,$
+      cldir+bgddir,cldir+specdir+'/temp.rmf',method=2
+rmfname='temp.rmf'
 
 if not keyword_set(fakname) then fakname=specname
 if not keyword_set(srcdir) then srcdir=cldir+specdir+'/' else srcdir=cldir+srcdir+'/'
@@ -214,7 +220,7 @@ spawn,'xspec - temp.xcm'
 if keyword_set(savexcm) then spawn,'cp -f temp.xcm '+srcdir+'/'+savexcm
 spawn,'rm -f temp.xcm'
 
-
+spawn,'rm -f '+cldir+specdir+'temp.rmf'
 
 spawn,'fparkey '+str(backscl)+' '+srcdir+'/bgdap'+fakname+' BACKSCAL'
 spawn,'fparkey '+str(backscl)+' '+srcdir+'/bgdfcxb'+fakname+' BACKSCAL'

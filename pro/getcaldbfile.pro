@@ -11,6 +11,11 @@ if type eq 'psf' then begin
     jj=where(par1 ge psf.energ_lo and par1 lt psf.energ_hi)
     if jj[0] eq -1 then stop,'GETCALDBFILE: error retrieving psf file'
     returnstr=getenv('CALDB')+'/'+str(indx[ii].cal_dir)+'/'+str(psf[jj]._2dpsffile)
+endif else if type eq 'psfen' then begin
+    cnam='GRPPSF'
+    ii=where(str(indx.cal_cnam) eq cnam and indx.cal_qual eq 0 and $
+          str(indx.instrume) eq inst)
+    returnstr=getenv('CALDB')+'/'+str(indx[ii].cal_dir)+'/'+str(indx[ii].cal_file)
 endif else if type eq 'arf' then begin
     cnam='SPECRESP'
     ii=where(str(indx.cal_cnam) eq cnam and indx.cal_qual eq 0 and $

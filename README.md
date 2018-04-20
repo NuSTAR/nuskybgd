@@ -1,6 +1,16 @@
 # nuskybgd:
 ## An IDL module for producing simulated background for NuSTAR.
 
+This branch fixes a bug where the detector absorption was not included
+in output background spectra or images.
+In general, this caused a % level bias at low energies, but could be important
+for faint observations.
+The background does not have to be refit with this update; only nuskybgd_image.pro
+and/or nuskybgd_spec.pro need to be rerun.
+For nuskybgd_image.pro, DO NOT set the /noremakeinstr, as these files need to
+be remade (but once made for a given observation, the keyword can be used again).
+Please report any issues to D. Wik.
+
 ### Overview
 
 nuskybgd is code for simulating the NuSTAR background the Cosmix X-ray
