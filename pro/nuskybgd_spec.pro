@@ -138,8 +138,12 @@ rmfname=sxpar(h,'RESPFILE')
 if keyword_set(forcermf) then rmfname=forcermf
 
 if file_test(cldir+specdir+'temp.rmf') then spawn,'rm -f '+cldir+specdir+'temp.rmf'
+;addabs2rmf,cldir+specdir+'/'+rmfname,ab,refdir+'bgdap0'+ab+'.fits',cldir+srcreg,$
+;      cldir+bgddir,cldir+specdir+'/temp.rmf',method=2
+
 addabs2rmf,cldir+specdir+'/'+rmfname,ab,refdir+'bgdap0'+ab+'.fits',cldir+srcreg,$
-      cldir+bgddir,cldir+specdir+'/temp.rmf',method=2
+      refdir,cldir+specdir+'/temp.rmf',method=2
+
 rmfname='temp.rmf'
 
 if not keyword_set(fakname) then fakname=specname
