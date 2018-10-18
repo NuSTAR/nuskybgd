@@ -309,7 +309,7 @@ for ibgd=0,n_elements(specname)-1 do begin
     printf,lun,str(index1[1,iab])+' -1'
     printf,lun,str(ebreak[1,iab])+' -1'
     printf,lun,str(index2[1,iab])+' -1'
-    if idiff[ibgd] ne 0 then begin
+    if ibgd eq 0 then begin
         b0=ibgd
         printf,lun,str(total(ifactors[bb,*,iab]*detfrac[b0,*]))+' '+ $
               str(0.1*total(ifactors[bb,*,iab]*detfrac[b0,*]))
