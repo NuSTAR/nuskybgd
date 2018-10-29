@@ -33,10 +33,10 @@
 
 
 pro nuskybgd_fitab,indir,obsid,bgdreg,specdir,specname,ab,bgddir,header,$
-      clobber=clobber,pa=pa,paramfile=paramfile,nocheck=nocheck,$
-      fixfcxb=fixfcxb,grxe=grxe,iisrc=iisrc,fixap=fixap,nofit=nofit,tieap=tieap,$
-      srcarr=srcarr,srcdir=srcdir,runxcm=runxcm
-
+                   clobber=clobber,pa=pa,paramfile=paramfile,nocheck=nocheck,$
+                   fixfcxb=fixfcxb,grxe=grxe,iisrc=iisrc,fixap=fixap,nofit=nofit,tieap=tieap,$
+                   srcarr=srcarr,srcdir=srcdir,runxcm=runxcm, $
+                   fix_line_ratios=fix_line_ratios, no_solar = no_solar
 absave=ab
 if not keyword_set(srcarr) then srcarr=replicate(0,n_elements(bgdreg))
 if not keyword_set(srcdir) then srcdir=''
@@ -87,6 +87,9 @@ endelse
 
 xcmfile=clspecdir[0]+specdir+'.xcm'
 openw,lun,xcmfile,/get_lun
+
+
+
 readcol,auxildir+'ratiosA.dat',aeline,awidth,af0,af1,af2,af3,/silent
 eline=fltarr(n_elements(aeline)-2,2)
 width=fltarr(n_elements(aeline)-2,2)
@@ -237,28 +240,74 @@ printf,lun,'model 3:intbgd ',format='($,A)'
 for i=0,n_elements(eline[*,0])-1 do printf,lun,'lorentz+',format='($,A)'
 printf,lun,'apec'
 for ibgd=0,n_elements(specname)-1 do begin
-  if abarr[ibgd] eq 'A' then iab=0 else iab=1
-  for i=0,n_elements(eline[*,0])-1 do begin
+   if abarr[ibgd] eq 'A' then iab=0 else iab=1
+   for i=0,n_elements(eline[*,0])-1 do begin
       printf,lun,str(eline[i,iab])+' -1'
       printf,lun,str(width[i,iab])+' -1'
-      if igrp[ibgd] ne ig then begin
-          printf,lun,str(total(ifactors[i,*,iab]*detfrac[ibgd,*]))+' '+ $
-                str(0.1*total(ifactors[i,*,iab]*detfrac[ibgd,*]))
+      if igrp[ibgd] ne ig then BEGIN
+         
+         line_flux = total(ifactors[i,*,iab]*detfrac[ibgd,*])
+
+         ; Store the 19 keV line (which is the i==3 line) flux to use
+         ; as a baseline for the rest of the internal background
+         ; lines.
+         ; The first three lines are probably solar related (3 and 6
+         ; keV) or have a poorly fit value (10 keV). So you can turn
+         ; them off individually later.
+
+         IF i EQ 3 THEN BEGIN
+            line_baseline_flux = line_flux
+            printf,lun,str(line_flux)+' '+ $
+                   str(0.1*line_flux)
+            continue
+         ENDIF
+
+         
+         IF i GT 3 THEN BEGIN
+            IF keyword_set(fix_line_ratios) THEN BEGIN
+               line_ratio = line_flux / line_baseline_flux
+               printf, lun, '=intbgd:12*'+str(line_ratio)
+            ENDIF ELSE BEGIN
+               printf,lun,str(line_flux)+' '+ $
+                      str(0.1*line_flux)
+            ENDELSE
+
+            continue
+         ENDIF
+
+         IF (i LT 3)  THEN begin 
+                                ; For the first three parameters and the last one, zero
+                                ; them out if you don't want the solar component:
+            IF keyword_set(no_solar) THEN BEGIN
+               printf, lun, '0. -0.1'
+            ENDIF ELSE begin
+               printf,lun,str(line_flux)+' '+ $
+                      str(0.1*line_flux)
+            ENDELSE
+         ENDIF
+         
+;         printf,lun,str(total(ifactors[i,*,iab]*detfrac[ibgd,*]))+' '+ $
+;                str(0.1*total(ifactors[i,*,iab]*detfrac[ibgd,*]))
+      
       endif else begin
-          printf,lun,'=intbgd:'+str(3+b0*(n_elements(eline[*,0])*3+4)+i*3)+$
+         printf,lun,'=intbgd:'+str(3+b0*(n_elements(eline[*,0])*3+4)+i*3)+$
                 '*'+str(total(ifactors[i,*,iab]*bgddetfrac[ibgd,*])/ $
-                total(ifactors[i,*,iab]*bgddetfrac[b0,*]))
-      endelse
-  endfor
-  printf,lun,str(index1[0,iab])+' -1'
-  printf,lun,str(index2[0,iab])+' -1'
-  printf,lun,str(ebreak[0,iab])+' -1'
-  if igrp[ibgd] ne ig then begin
-      printf,lun,str(total(ifactors[bb,*,iab]*detfrac[ibgd,*]))+' '+ $
-            str(0.1*total(ifactors[bb,*,iab]*detfrac[ibgd,*]))
-  endif else begin
+                        total(ifactors[i,*,iab]*bgddetfrac[b0,*]))
+      ENDELSE
+      
+   endfor
+   printf,lun,str(index1[0,iab])+' -1'
+   printf,lun,str(index2[0,iab])+' -1'
+   printf,lun,str(ebreak[0,iab])+' -1'
+   if igrp[ibgd] ne ig then BEGIN
+      IF keyword_set(no_solar) THEN BEGIN
+         printf, lun, '0. -0.1'
+      ENDIF ELSE $
+         printf,lun,str(total(ifactors[bb,*,iab]*detfrac[ibgd,*]))+' '+ $
+         str(0.1*total(ifactors[bb,*,iab]*detfrac[ibgd,*]))
+   endif else begin
       printf,lun,'=intbgd:'+str(n_elements(eline[*,0])*3+4+$
-            b0*(n_elements(eline[*,0])*3+4))+'*'+$
+                                b0*(n_elements(eline[*,0])*3+4))+'*'+$
             str(total(ifactors[n_elements(eline[*,0]),*,iab]*$
             bgddetfrac[ibgd,*])/total(ifactors[n_elements(eline[*,0]),*,iab]*$
             bgddetfrac[b0,*]))

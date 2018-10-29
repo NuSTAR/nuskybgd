@@ -147,12 +147,10 @@ if file_test(cldir+specdir+'temp.rmf') then spawn,'rm -f '+cldir+specdir+'temp.r
 ;addabs2rmf,cldir+specdir+'/'+rmfname,ab,refdir+'bgdap0'+ab+'.fits',cldir+srcreg,$
 ;      cldir+bgddir,cldir+specdir+'/temp.rmf',method=2
 
+;; addabs2rmf,cldir+specdir+'/'+rmfname,ab,refdir+'bgdap0'+ab+'.fits',cldir+srcreg,$
+;;       refdir,cldir+specdir+'/bgd_model.rmf',method=2
 
-
-addabs2rmf,cldir+specdir+'/'+rmfname,ab,refdir+'bgdap0'+ab+'.fits',cldir+srcreg,$
-      refdir,cldir+specdir+'/bgd_model.rmf',method=2
-
-rmfname='bgd_model.rmf'
+;; rmfname='bgd_model.rmf'
 
 if not keyword_set(fakname) then fakname=specname
 if not keyword_set(srcdir) then srcdir=cldir+specdir+'/' else srcdir=cldir+srcdir+'/'
@@ -177,25 +175,36 @@ data_ind = str(data_ind, format='(i0)')
 
 printf, lun, 'response '+spec_ind+':'+data_ind+' '+rmfname
 printf, lun, 'arf '+spec_ind+':'+data_ind+' '+bearf
-printf,lun,'model '+spec_ind+':apbgd'+ab+'_'+data_ind+' (po*highecut)'
-
+;printf,lun,'model '+spec_ind+':apbgd'+ab+'_'+data_ind+' (po*highecut)'
+;printf,lun,'1.29 -1'
+;printf,lun,str(apnorm)+' -1'
+;printf,lun,'1e-4 -1'
+;printf,lun,'41.13 -1'
+printf, lun, 'model '+spec_ind+':apbg'+ab+'_'+data_ind+' cutoffpl'
 printf,lun,'1.29 -1'
-printf,lun,str(apnorm)+' -1'
-printf,lun,'1e-4 -1'
 printf,lun,'41.13 -1'
-
+printf,lun,str(apnorm)+' -1'
 
 model_ind++
 spec_ind = str(model_ind, format='(i0)')
 
 printf, lun, 'response '+spec_ind+':'+data_ind+' '+rmfname
 printf, lun, 'arf '+spec_ind+':'+data_ind+' '+arf_file
-printf,lun,'model '+spec_ind+':fxapbgd'+ab+'_'+data_ind+' (po*highecut)'
+;; printf,lun,'model '+spec_ind+':fxapbgd'+ab+'_'+data_ind+' (po*highecut)'
+;; printf,lun,'1.29 -1'
+;; if keyword_set(avgfcxb) then printf,lun,str(0.002353*(2.45810736/3600.*1000.)^2* $
+;;       backscl)+' -1' else printf,lun,str(fcxbnorm)+' -1'
+;; printf,lun,'1e-4 -1'
+;; printf,lun,'41.13 -1'
+
+
+printf,lun,'model '+spec_ind+':fxapbgd'+ab+'_'+data_ind+' cutoffpl'
 printf,lun,'1.29 -1'
+printf,lun,'41.13 -1'
 if keyword_set(avgfcxb) then printf,lun,str(0.002353*(2.45810736/3600.*1000.)^2* $
       backscl)+' -1' else printf,lun,str(fcxbnorm)+' -1'
-printf,lun,'1e-4 -1'
-printf,lun,'41.13 -1'
+;printf,lun,'1e-4 -1'
+
 
 
 
@@ -211,9 +220,9 @@ for i=0,n_elements(eline)-1 do printf,lun,'lorentz+',format='($,A)'
 ;printf,lun,'bknpo+phabs*po)'
 printf,lun,'apec)'
 for i=0,n_elements(eline)-1 do begin
-    printf,lun,str(eline[i])+' -1'
-    printf,lun,str(width[i])+' -1'
-    printf,lun,str(pinstr[i])+ ' -1'
+   printf,lun,str(eline[i])+' -1'
+   printf,lun,str(width[i])+' -1'
+   printf,lun,str(pinstr[i])+ ' -1'
 endfor
 printf,lun,str(index1[0])+' -1'
 printf,lun,str(index2[0])+' -1'
